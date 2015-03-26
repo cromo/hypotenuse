@@ -7,11 +7,10 @@
   (list-comp (CosNaming.NameComponent (str component) (str ""))
     [component (.split context-name "/")]))
 
-(defn resolve-reference [reference-name &rest args]
-  (setv args (dict (zip (slice args 0 None 2) (slice args 1 None 2))))
-  (when (not (in :using args)) (assoc args :using (get-default-orb)))
+(defn resolve-reference [reference-name &rest kwargs]
   (let
-    [[orb (get args :using)]
+    [[args (dict (zip (slice kwargs 0 None 2) (slice kwargs 1 None 2)))]
+      [orb (.get args :using (get-default-orb))]
       [obj-name (str reference-name)]
       [obj (.resolve-initial-references orb obj-name)]]
     (if (in :as args)
