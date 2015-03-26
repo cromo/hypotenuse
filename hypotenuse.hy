@@ -1,6 +1,6 @@
 (import [omniORB [CORBA]] CosNaming)
 
-(defn default-orb []
+(defn get-default-orb []
   (CORBA.ORB-init))
 
 (defn name-components [context-name]
@@ -9,7 +9,7 @@
 
 (defn resolve-reference [reference-name &rest args]
   (setv args (dict (zip (slice args 0 None 2) (slice args 1 None 2))))
-  (when (not (in :using args)) (assoc args :using (default-orb)))
+  (when (not (in :using args)) (assoc args :using (get-default-orb)))
   (let
     [[orb (get args :using)]
       [obj-name (str reference-name)]
@@ -23,13 +23,11 @@
 ;; :using orb (defaults to default orb)
 ;; :in root-context (defaults to "NameService")
 ;; :as type (default None; returns CORBA Object)
-(defn resolve-name [context-name &rest args]
-  (setv args (dict (zip (slice args 0 None 2) (slice args 1 None 2))))
-  (when (not-in :using args) (assoc args :using (default-orb)))
-  (when (not-in :in args) (assoc args :in "NameService"))
+(defn resolve-name [context-name &rest kwargs]
   (let
-    [[orb (get args :using)]
-      [passed-context (get args :in)]
+    [[args (dict (zip (slice kwargs 0 None 2) (slice kwargs 1 None 2)))]
+      [orb (.get args :using (get-default-orb))]
+      [passed-context (.get args :in "NameService")]
       [root-context
         (if (string? passed-context)
           (resolve-reference (str passed-context) :as CosNaming.NamingContext)
